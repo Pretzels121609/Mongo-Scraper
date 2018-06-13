@@ -15,6 +15,12 @@ var PORT = 3000;
 // Initialize Express
 var app = express();
 
+// Set Handlebars.
+var exphbs = require("express-handlebars");
+
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
 // If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 
@@ -29,7 +35,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-// Routes
+// HTML Routes (route you to the correct HTML page)
+
+app.get("/", function(req, res) {
+  db.Article.find({},function(err, data) {
+    var hbsObject = {
+      articles: data
+    };
+    console.log(hbsObject);
+    res.render("index", hbsObject);
+  });
+});
+
+app.get("/saved", function(req, res) {
+  db.Article.find({saved:true}, function(err, data) {
+    var hbsObject = {
+      articles: data
+    };
+    console.log(hbsObject);
+    res.render("saved", hbsObject);
+  });
+});
 
 // A GET route for scraping the echoJS website
 app.get("/scrape", function(req, res) {
@@ -39,7 +65,7 @@ app.get("/scrape", function(req, res) {
       var $ = cheerio.load(response.data);
 
 
-      // Now, we grab every h2 within an article tag, and do the following:
+      // Now, we grab every theme-summary class, and do the following:
       $(".theme-summary").each(function(i, element) {
         // Save an empty result object
         var result = {};
@@ -90,7 +116,25 @@ app.get("/scrape", function(req, res) {
       });
   });
 
+// API Routes (routes you to an spi endpoint to interact with mongodb using CRUD functions)
 
+app.put('/api/save/:id', function(req,res) {
+  // save an Article with ObjectId 'id' (UPDATE)
+
+});
+
+app.delete('/api/delete/:id', function(req,res){
+  // delete an Article with ObjectId 'id' (DELETE)
+})
+
+app.post('/api/article/:id/note', function(req,res){
+  // insert a Note for an Article with ObjectId 'id' (CREATE)
+
+});
+
+app.get('/api/article/:id/notes', function(req, res){
+  // get all the notes for an Article with ObjectId 'id' (READ)
+})
 
 // Start the server
 app.listen(PORT, function() {
