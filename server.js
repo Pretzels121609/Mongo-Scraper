@@ -10,7 +10,8 @@ var axios = require("axios");
 // Require all models
 var db = require("./models");
 
-var PORT = 3000;
+// process.env.PORT code that allow heroku server to run - otherwise run locally on port 3000
+var PORT = process.env.PORT || 3000;
 
 // Initialize Express
 var app = express();
